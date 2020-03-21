@@ -1,0 +1,30 @@
+#!/usr/bin/env node
+
+'use strict';
+
+const path = require('path');
+const fs = require('fs');
+const he = require('he');
+
+const filePath = path.resolve(process.cwd(), process.argv[2]);
+const fileContents = fs.readFileSync(filePath, 'utf8');
+
+// Gather the <span>s that contain the highlights.
+const highlights = fileContents.match(/<span id="highlight".*<\/span>/g);
+// Get only the content of those highlights, not including the HTML.
+const highlightsContents = highlights.map(a => a.match(/>(.+)</)[1]);
+
+// It will contain HTML encoded entities, so we want to decode them.
+const decodedContents = highlightsContents.map(a => he.decode(a));
+
+// Grab something from the file which is unique per reload, and thus per
+// download of the HTML file.
+const ueId = fileContents.match(/ue_id = '(.+)'/)[1];
+
+const stdout = JSON.stringify({
+  ueId,
+  highlights: decodedContents,
+});
+
+// Output to the stdout stream.
+console.log(stdout);
