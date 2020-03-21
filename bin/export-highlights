@@ -34,7 +34,9 @@ const exportToTxt = highlightsByBook => {
 };
 
 (async () => {
-  const db = await sqlite.open(path.resolve(process.cwd(), argv._[0]), { Promise });
+  const db = await sqlite.open(path.resolve(process.cwd(), argv._[0]), {
+    Promise,
+  });
 
   let highlights;
 
@@ -89,21 +91,20 @@ const exportToTxt = highlightsByBook => {
    */
 
   let highlightsByBook = _groupBy(highlights, 'book_title');
-  highlightsByBook = Object.keys(highlightsByBook)
-    .reduce(
-      (books, bookTitle) => {
-        if (argv.latest) {
-          const latestInsertedAt = highlightsByBook[bookTitle][0].inserted_at;
-          books[bookTitle] = highlightsByBook[bookTitle]
-            .filter(a => a.inserted_at === latestInsertedAt)
-            .map(a => a.highlight);
-        } else {
-          books[bookTitle] = highlightsByBook[bookTitle].map(a => a.highlight);
-        }
-        return books;
-      },
-      {}
-    );
+  highlightsByBook = Object.keys(highlightsByBook).reduce(
+    (books, bookTitle) => {
+      if (argv.latest) {
+        const latestInsertedAt = highlightsByBook[bookTitle][0].inserted_at;
+        books[bookTitle] = highlightsByBook[bookTitle]
+          .filter(a => a.inserted_at === latestInsertedAt)
+          .map(a => a.highlight);
+      } else {
+        books[bookTitle] = highlightsByBook[bookTitle].map(a => a.highlight);
+      }
+      return books;
+    },
+    {}
+  );
 
   console.log(exportToTxt(highlightsByBook));
 })();

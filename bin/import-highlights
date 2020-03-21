@@ -22,27 +22,31 @@ const generateDatabaseRecords = highlights => {
 };
 
 (async () => {
-  const db = await sqlite.open(path.resolve(process.cwd(), 'database.sqlite'), { Promise });
+  const db = await sqlite.open(path.resolve(process.cwd(), 'database.sqlite'), {
+    Promise,
+  });
   await db.migrate({ force: argv.nuke ? 'last' : false });
 
   const input = JSON.parse(await getStdin());
 
   const results = await pSettle(
-    generateDatabaseRecords(input)
-      .map(a => db.all(
+    generateDatabaseRecords(input).map(a =>
+      db.all(
         SQL`
           INSERT
           INTO highlights
           (book_title, highlight, location, inserted_at)
           VALUES (${a.book_title}, ${a.highlight}, ${a.location}, ${a.inserted_at})
-        `)
+        `
       )
+    )
   );
 
   results.forEach(({ isRejected, reason }) => {
     if (
       isRejected &&
-      reason.message !== 'SQLITE_CONSTRAINT: UNIQUE constraint failed: highlights.highlight'
+      reason.message !==
+        'SQLITE_CONSTRAINT: UNIQUE constraint failed: highlights.highlight'
     ) {
       console.error(reason.message);
     }

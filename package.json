@@ -1,13 +1,15 @@
 {
   "name": "kindle-highlights",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "eslint bin/*"
   },
-  "keywords": [],
-  "author": "",
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint -- --fix"
+    }
+  },
+  "author": "Eduardo Lavaque <me@greduan.com",
   "license": "ISC",
   "dependencies": {
     "get-stdin": "^7.0.0",
@@ -17,5 +19,12 @@
     "p-settle": "^4.0.0",
     "sql-template-strings": "^2.2.2",
     "sqlite": "^3.0.3"
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.10.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "husky": "^4.2.3",
+    "prettier": "^1.19.1"
   }
 }

@@ -10,9 +10,14 @@ const he = require('he');
 
 const extractTagContents = tag => tag.match(/>(.+)</)[1];
 
-const fileContents = fs.readFileSync(path.resolve(process.cwd(), argv._[0]), 'utf8');
+const fileContents = fs.readFileSync(
+  path.resolve(process.cwd(), argv._[0]),
+  'utf8'
+);
 
-const bookTitle = he.decode(extractTagContents(fileContents.match(/<h3.*<\/h3>/)[0]));
+const bookTitle = he.decode(
+  extractTagContents(fileContents.match(/<h3.*<\/h3>/)[0])
+);
 const highlights = fileContents
   .match(/<span id="highlight".*<\/span>/g)
   .map(extractTagContents)
