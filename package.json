@@ -10,6 +10,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "he": "^1.2.0"
+    "get-stdin": "^7.0.0",
+    "he": "^1.2.0",
+    "p-settle": "^4.0.0",
+    "sql-template-strings": "^2.2.2",
+    "sqlite": "^3.0.3"
   }
 }
