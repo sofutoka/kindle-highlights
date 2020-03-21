@@ -9,6 +9,23 @@ my Japanese studies according to the [Mass Immersion Approach][mia].
 Of course you can use this to extract the sentences for whatever your purpose
 may be.
 
+## Inspiration
+
+The need for this project arose when on a fine Saturday morning I went to look
+at the `My Clippings.txt` file and lo and behold all of my highlighted sentences
+had a nice message:
+
+> <You have reached the clipping limit for this item>
+
+Fantastic, thank you DRM limitations.
+
+I looked into it and https://clippings.io works nicely to do extract the
+highlights.  However, it is clunky as hell.  You'd export all your sentences
+every time, there's no easy straightforward way to only export the sentences
+that you've gathered since last time.
+
+So I made my own tooling, which is this project.
+
 ## Setup
 
 Requirements:
@@ -58,7 +75,7 @@ After you've imported some highlights into the database, there is also a
 convenient script you can use to export the highlights into a convenient format.
 
 ```sh
-./bin/export-highlights <path/to/database/file.sqlite> [--book_title <SQL LIKE statement>]
+./bin/export-highlights database.sqlite --latest
 ```
 
 It would output something like the following:
@@ -72,18 +89,8 @@ It would output something like the following:
 アウラに比べれば武装は少ない。
 ```
 
-### Nuking
-
-The `import-highlights` script has a `--nuke` flag, which if used will delete the
-contents of the database before inserting new data.
-
-This is meant to be used for a new card making session.  E.g. two days ago you
-imported all your highlights and exported them, today you want to do it again
-but ignoring the previous highlights, well you can do so by using the `--nuke`
-flag, as it'll delete the previous records and thus when you export again you
-won't have the old data again.
-
-Use that flow if it matches your flow.
+Because we used the `--latest` flag then for each book it'd only export the most
+recently imported batch of highlights.  Very handy.
 
 ## How it works
 
@@ -119,3 +126,20 @@ The `database.sqlite` would now contain the following record:
 
 And it has a `--nuke` flag, which will clear the database before inserting the
 highlights into the database.
+
+### `export-highlights`
+
+Exports the highlights in the given database for a given book.
+
+```sh
+./bin/export-highlights <path/to/database/file.sqlite> [--book_title <SQL LIKE statement>] [--latest]
+```
+
+Flags:
+
+- `--book_title` allows you to filter which book to export the highlights of.
+    Takes in an [SQL LIKE statement][sqllike].
+- `--latest` when passed in only exports the latest imported batch, instead of
+    everything that has been imported for that book.
+
+[sqllike]: https://www.w3schools.com/SQL/sql_like.asp

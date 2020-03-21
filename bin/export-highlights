@@ -42,23 +42,25 @@ const exportToTxt = highlightsByBook => {
     highlights = await db.all(SQL`
       SELECT
         book_title,
-        highlight
+        highlight,
+        inserted_at
       FROM highlights
       WHERE
         book_title LIKE ${argv.book_title}
       ORDER BY
-        location ASC,
-        inserted_at DESC;
+        inserted_at DESC,
+        location ASC;
     `);
   } else {
     highlights = await db.all(SQL`
       SELECT
         book_title,
-        highlight
+        highlight,
+        inserted_at
       FROM highlights
       ORDER BY
-        location ASC,
-        inserted_at DESC;
+        inserted_at DESC,
+        location ASC;
     `);
   }
 
@@ -90,7 +92,14 @@ const exportToTxt = highlightsByBook => {
   highlightsByBook = Object.keys(highlightsByBook)
     .reduce(
       (books, bookTitle) => {
-        books[bookTitle] = highlightsByBook[bookTitle].map(a => a.highlight)
+        if (argv.latest) {
+          const latestInsertedAt = highlightsByBook[bookTitle][0].inserted_at;
+          books[bookTitle] = highlightsByBook[bookTitle]
+            .filter(a => a.inserted_at === latestInsertedAt)
+            .map(a => a.highlight);
+        } else {
+          books[bookTitle] = highlightsByBook[bookTitle].map(a => a.highlight);
+        }
         return books;
       },
       {}
