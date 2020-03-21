@@ -1,0 +1,100 @@
+#!/usr/bin/env node
+
+'use strict';
+
+const argv = require('minimist')(process.argv.slice(2));
+
+const path = require('path');
+const sqlite = require('sqlite');
+const SQL = require('sql-template-strings');
+const _groupBy = require('lodash.groupby');
+
+/**
+ * Generates a string like the following:
+ *
+ * オーバーロード1　不死者の王
+ * ==============
+ *
+ * ネックレスはアウラのものに酷似しているが、銀色のドングリ。
+ *
+ * アウラに比べれば武装は少ない。
+ */
+const exportToTxt = highlightsByBook => {
+  let res = '';
+
+  Object.entries(highlightsByBook).forEach(([bookTitle, highlights]) => {
+    res += bookTitle;
+    res += '\n' + '='.repeat(bookTitle.length);
+    highlights.forEach(text => {
+      res += '\n\n' + text;
+    });
+  });
+
+  return res;
+};
+
+(async () => {
+  const db = await sqlite.open(path.resolve(process.cwd(), argv._[0]), { Promise });
+
+  let highlights;
+
+  if (argv.book_title) {
+    highlights = await db.all(SQL`
+      SELECT
+        book_title,
+        highlight
+      FROM highlights
+      WHERE
+        book_title LIKE ${argv.book_title}
+      ORDER BY
+        location ASC,
+        inserted_at DESC;
+    `);
+  } else {
+    highlights = await db.all(SQL`
+      SELECT
+        book_title,
+        highlight
+      FROM highlights
+      ORDER BY
+        location ASC,
+        inserted_at DESC;
+    `);
+  }
+
+  /**
+   * Transform:
+   * [
+   *   {
+   *     book_title: 'オーバーロード1　不死者の王',
+   *     highlight: 'ネックレスはアウラのものに酷似しているが、銀色のドングリ。',
+   *   },
+   * ]
+   * [
+   *   {
+   *     book_title: 'オーバーロード1　不死者の王',
+   *     highlight: 'アウラに比べれば武装は少ない。',
+   *   },
+   * ]
+   *
+   * Into:
+   * {
+   *   'オーバーロード1　不死者の王': [
+   *     'ネックレスはアウラのものに酷似しているが、銀色のドングリ。',
+   *     'アウラに比べれば武装は少ない。',
+   *   ],
+   * }
+   */
+
+  let highlightsByBook = _groupBy(highlights, 'book_title');
+  highlightsByBook = Object.keys(highlightsByBook)
+    .reduce(
+      (books, bookTitle) => {
+        books[bookTitle] = highlightsByBook[bookTitle].map(a => a.highlight)
+        return books;
+      },
+      {}
+    );
+
+  console.log(exportToTxt(highlightsByBook));
+})();

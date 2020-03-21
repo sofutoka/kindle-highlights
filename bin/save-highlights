@@ -2,6 +2,8 @@
 
 'use strict';
 
+const argv = require('minimist')(process.argv.slice(2));
+
 const getStdin = require('get-stdin');
 const sqlite = require('sqlite');
 const path = require('path');
@@ -21,7 +23,7 @@ const generateDatabaseRecords = highlights => {
 
 (async () => {
   const db = await sqlite.open(path.resolve(process.cwd(), 'database.sqlite'), { Promise });
-  await db.migrate({ force: process.argv[2] === '--nuke' ? 'last' : false });
+  await db.migrate({ force: argv.nuke ? 'last' : false });
 
   const input = JSON.parse(await getStdin());
 

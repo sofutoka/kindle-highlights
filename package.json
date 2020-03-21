@@ -12,6 +12,8 @@
   "dependencies": {
     "get-stdin": "^7.0.0",
     "he": "^1.2.0",
+    "lodash.groupby": "^4.6.0",
+    "minimist": "^1.2.5",
     "p-settle": "^4.0.0",
     "sql-template-strings": "^2.2.2",
     "sqlite": "^3.0.3"
