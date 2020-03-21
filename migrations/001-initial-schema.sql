@@ -1,8 +1,9 @@
 -- Up
 CREATE TABLE highlights (
   id INTEGER PRIMARY KEY,
-  ue_id TEXT NOT NULL,
+  book_title TEXT NOT NULL,
   highlight TEXT NOT NULL UNIQUE,
+  location INTEGER NOT NULL,
   inserted_at TEXT NOT NULL
 );
 

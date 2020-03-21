@@ -46,10 +46,10 @@ highlighted sentences and you can access by doing:
 sqlite3 database.sqlite
 ```
 
-To get all your sentences you can run:
+To get all your sentences you can use the following query:
 
 ```sql
-SELECT highlight FROM highlights ORDER BY inserted_at DESC;
+SELECT book_title, highlight FROM highlights ORDER BY inserted_at DESC, location ASC;
 ```
 
 ## How it works

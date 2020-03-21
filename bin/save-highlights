@@ -10,22 +10,19 @@ const pSettle = require('p-settle');
 
 const generateDatabaseRecords = highlights => {
   const inserted_at = new Date().toISOString();
-  const ue_id = highlights.ueId;
+  const book_title = highlights.bookTitle;
   return highlights.highlights.map(highlight => ({
-    ue_id,
-    highlight,
+    book_title,
+    highlight: highlight.text,
+    location: highlight.location,
     inserted_at,
   }));
 };
 
 (async () => {
-  // Get a database connection.
   const db = await sqlite.open(path.resolve(process.cwd(), 'database.sqlite'), { Promise });
-  // Run the database migrations.
   await db.migrate({ force: process.argv[2] === '--nuke' ? 'last' : false });
 
-  // Get the input which is presumably passed in from the stdout of the
-  // extract-highlights script.
   const input = JSON.parse(await getStdin());
 
   const results = await pSettle(
@@ -34,8 +31,8 @@ const generateDatabaseRecords = highlights => {
         SQL`
           INSERT
           INTO highlights
-          (ue_id, highlight, inserted_at)
-          VALUES (${a.ue_id}, ${a.highlight}, ${a.inserted_at})
+          (book_title, highlight, location, inserted_at)
+          VALUES (${a.book_title}, ${a.highlight}, ${a.location}, ${a.inserted_at})
         `)
       )
   );
