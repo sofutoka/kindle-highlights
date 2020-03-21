@@ -15,7 +15,7 @@ The need for this project arose when on a fine Saturday morning I went to look
 at the `My Clippings.txt` file and lo and behold all of my highlighted sentences
 had a nice message:
 
-> <You have reached the clipping limit for this item>
+> \<You have reached the clipping limit for this item>
 
 Fantastic, thank you DRM limitations.
 
