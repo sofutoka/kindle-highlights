@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Kindle Highlights by @greduan</title>
+  <meta name="description" content="Kindle Highlights by @greduan">
+  <meta name="author" content="Eduardo Lavaque">
+</head>
+
+<body>
+  <h1>Kindle Highlights by @greduan</h1>
+
+  <div id="target">
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/ractive"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.15/lodash.min.js"></script>
+
+  <script id="template" type="text/ractive">
+    <label>
+      Upload your highlights
+      <input on-change="parseUpload" type="file" />
+    </label>
+
+    {{#each books}}
+      <h2>{{.bookTitle}}</h2>
+      <ul>
+      {{#each .highlights}}
+        <li>{{.text}}</li>
+      {{/each}}
+      </ul>
+    {{else}}
+      <p>Book hasn't been loaded yet.</p>
+    {{/each}}
+  </script>
+
+  <script src="/index.js"></script>
+</body>
+</html>

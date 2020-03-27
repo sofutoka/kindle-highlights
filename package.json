@@ -2,7 +2,7 @@
   "name": "kindle-highlights",
   "private": true,
   "scripts": {
-    "lint": "eslint bin/*"
+    "lint": "eslint index.js"
   },
   "husky": {
     "hooks": {
