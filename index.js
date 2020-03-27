@@ -1,3 +1,5 @@
+'use strict';
+
 const readFile = file =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -7,7 +9,7 @@ const readFile = file =>
 
 const extractTagContents = tag => tag.match(/>(.+)</)[1];
 
-const getBookTitle = fileContents =>
+const getTitle = fileContents =>
   extractTagContents(fileContents.match(/<h3.*<\/h3>/)[0]);
 
 const getHighlights = fileContents =>
@@ -19,6 +21,57 @@ const getLocations = fileContents =>
     .map(extractTagContents)
     .map(a => a.match(/[0-9,]+$/)[0].replace(',', ''));
 
+const generateNewBook = uploadedHighlights => ({
+  title: uploadedHighlights.title,
+  batches: [
+    {
+      highlights: uploadedHighlights.highlights
+        .map((text, i) => ({
+          text,
+          location: uploadedHighlights.locations[i],
+        }))
+        .sort((a, b) => b.location - a.location),
+      extractedAt: uploadedHighlights.extractedAt,
+    },
+  ],
+});
+
+const addNewBatchToBook = (book, newBatch) => {
+  const allOldHighlights = _.flattenDeep(
+    book.batches.map(a => a.highlights.map(a => a.text))
+  );
+  const cleanedBatch = {
+    ...newBatch,
+    highlights: newBatch.highlights.reduce((acc, highlight) => {
+      if (!allOldHighlights.includes(highlight.text)) {
+        acc.push(highlight);
+      }
+      return acc;
+    }, []),
+  };
+
+  return {
+    ...book,
+    batches: [cleanedBatch, ...book.batches],
+  };
+};
+
+const updateBooksArray = (booksArray, newBook) => {
+  const oldBookIndex = booksArray.findIndex(a => a.title === newBook.title);
+
+  if (oldBookIndex === -1) {
+    return [newBook, ...booksArray];
+  } else {
+    const oldBook = booksArray[oldBookIndex];
+    const updatedBook = addNewBatchToBook(oldBook, newBook.batches[0]);
+
+    const booksArrayMinusNewBook = [...booksArray];
+    booksArrayMinusNewBook.splice(oldBookIndex, 1);
+
+    return [updatedBook, ...booksArrayMinusNewBook];
+  }
+};
+
 const app = new Ractive({
   el: '#target',
   template: '#template',
@@ -27,12 +80,12 @@ const app = new Ractive({
     async parseUpload(ctx) {
       const file = await readFile(ctx.node.files[0]);
 
-      const bookTitle = getBookTitle(file);
+      const title = getTitle(file);
       const highlights = getHighlights(file);
       const locations = getLocations(file);
 
-      this.set('highlights', {
-        bookTitle,
+      this.set('uploadedHighlights', {
+        title,
         highlights,
         locations,
         extractedAt: new Date().toISOString(),
@@ -42,21 +95,41 @@ const app = new Ractive({
 
   computed: {
     books() {
-      const highlights = this.get('highlights');
+      const storedBooks = JSON.parse(
+        localStorage.getItem('books') === 'undefined'
+          ? 'null'
+          : localStorage.getItem('books')
+      );
+      const uploadedHighlights = this.get('uploadedHighlights') || null;
 
-      if (highlights === void 0) {
+      if (storedBooks === null && uploadedHighlights === null) {
+        console.log('First use.');
         return;
+      } else if (storedBooks === null) {
+        console.log(
+          `The user hasn't used it in the past, but has uploaded a new file.`
+        );
+        return [generateNewBook(uploadedHighlights)];
+      } else if (uploadedHighlights === null) {
+        console.log(
+          `The user has used it in the past, but hasn't uploaded a file yet.`
+        );
+        return storedBooks;
+      } else {
+        console.log(
+          `The user has used it in the past AND has uploaded a new file.`
+        );
+        return updateBooksArray(
+          storedBooks,
+          generateNewBook(uploadedHighlights)
+        );
       }
+    },
+  },
 
-      return [
-        {
-          bookTitle: highlights.bookTitle,
-          highlights: highlights.highlights.map((text, i) => ({
-            text,
-            location: highlights.locations[i],
-          })),
-        },
-      ];
+  observe: {
+    books(books) {
+      localStorage.setItem('books', JSON.stringify(books));
     },
   },
 });

@@ -10,8 +10,7 @@
 <body>
   <h1>Kindle Highlights by @greduan</h1>
 
-  <div id="target">
-  </div>
+  <div id="target"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/ractive"></script>
   <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.15/lodash.min.js"></script>
@@ -22,13 +21,18 @@
       <input on-change="parseUpload" type="file" />
     </label>
 
-    {{#each books}}
-      <h2>{{.bookTitle}}</h2>
-      <ul>
-      {{#each .highlights}}
-        <li>{{.text}}</li>
+    <hr />
+
+    {{#each books as book}}
+      <h2>{{book.title}}</h2>
+      {{#each book.batches as batch}}
+        <p>{{batch.extractedAt}}</p>
+        <ul>
+        {{#each batch.highlights as highlight}}
+          <li>{{highlight.text}}</li>
+        {{/each}}
+        </ul>
       {{/each}}
-      </ul>
     {{else}}
       <p>Book hasn't been loaded yet.</p>
     {{/each}}
