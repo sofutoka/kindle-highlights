@@ -24,7 +24,7 @@ Fantastic, thank you DRM limitations.
 I looked into it and <https://clippings.io> works nicely to do extract the
 highlights.  However:
 
-- It is clunky as hell.Y
+- It is clunky as hell.
 - You'd export all your sentences every time and there's no easy straightforward
     way to only export the sentences that you've gathered since last time.
 - If it had an easy way to delete sentences that'd be fine, but it doesn't.

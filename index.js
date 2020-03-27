@@ -7,31 +7,33 @@ const readFile = file =>
     reader.readAsText(file);
   });
 
-const extractTagContents = tag => tag.match(/>(.+)</)[1];
+const getTitle = contents =>
+  contents.match(/Your Kindle Notes For:\n(.+)\n/)[1];
 
-const getTitle = fileContents =>
-  extractTagContents(fileContents.match(/<h3.*<\/h3>/)[0]);
+const getHighlightsAndLocations = contents => {
+  const result = [];
+  const regex = RegExp('Location: ([0-9,]+)\n(.+)\n', 'g');
 
-const getHighlights = fileContents =>
-  fileContents.match(/<span id="highlight".*<\/span>/g).map(extractTagContents);
+  let match;
+  while ((match = regex.exec(contents)) !== null) {
+    result.push({
+      location: match[1].replace(',', ''),
+      highlight: match[2],
+    });
+  }
 
-const getLocations = fileContents =>
-  fileContents
-    .match(/<span id="annotationHighlightHeader".*<\/span>/g)
-    .map(extractTagContents)
-    .map(a => a.match(/[0-9,]+$/)[0].replace(',', ''));
+  return result;
+};
 
-const generateNewBook = uploadedHighlights => ({
-  title: uploadedHighlights.title,
+const generateNewBook = pastedHighlights => ({
+  title: pastedHighlights.title,
   batches: [
     {
-      highlights: uploadedHighlights.highlights
-        .map((text, i) => ({
-          text,
-          location: uploadedHighlights.locations[i],
-        }))
-        .sort((a, b) => b.location - a.location),
-      extractedAt: uploadedHighlights.extractedAt,
+      highlights: pastedHighlights.highlights.map((text, i) => ({
+        text,
+        location: pastedHighlights.locations[i],
+      })),
+      extractedAt: pastedHighlights.extractedAt,
     },
   ],
 });
@@ -76,41 +78,42 @@ const app = new Ractive({
   el: '#target',
   template: '#template',
 
-  on: {
-    async parseUpload(ctx) {
-      const file = await readFile(ctx.node.files[0]);
+  computed: {
+    pastedHighlights() {
+      const text = this.get('pastedText');
 
-      const title = getTitle(file);
-      const highlights = getHighlights(file);
-      const locations = getLocations(file);
+      const title = getTitle(text);
+      const highlightsAndLocations = getHighlightsAndLocations(text);
+      const highlights = highlightsAndLocations.map(a => a.highlight);
+      const locations = highlightsAndLocations.map(a => a.location);
 
-      this.set('uploadedHighlights', {
+      this.set('pastedText', '');
+
+      return {
         title,
         highlights,
         locations,
         extractedAt: new Date().toISOString(),
-      });
+      };
     },
-  },
 
-  computed: {
     books() {
       const storedBooks = JSON.parse(
         localStorage.getItem('books') === 'undefined'
           ? 'null'
           : localStorage.getItem('books')
       );
-      const uploadedHighlights = this.get('uploadedHighlights') || null;
+      const pastedHighlights = this.get('pastedHighlights') || null;
 
-      if (storedBooks === null && uploadedHighlights === null) {
+      if (storedBooks === null && pastedHighlights === null) {
         console.log('First use.');
         return;
       } else if (storedBooks === null) {
         console.log(
           `The user hasn't used it in the past, but has uploaded a new file.`
         );
-        return [generateNewBook(uploadedHighlights)];
-      } else if (uploadedHighlights === null) {
+        return [generateNewBook(pastedHighlights)];
+      } else if (pastedHighlights === null) {
         console.log(
           `The user has used it in the past, but hasn't uploaded a file yet.`
         );
@@ -119,10 +122,7 @@ const app = new Ractive({
         console.log(
           `The user has used it in the past AND has uploaded a new file.`
         );
-        return updateBooksArray(
-          storedBooks,
-          generateNewBook(uploadedHighlights)
-        );
+        return updateBooksArray(storedBooks, generateNewBook(pastedHighlights));
       }
     },
   },

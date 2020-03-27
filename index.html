@@ -19,11 +19,12 @@
       </li>
       <li>Choose your book.</li>
       <li>
-        Download the page by right clicking and choosing "Save Page As..." or
-        similar and saving it as an HTML file in the location of your liking.
+        Select the contents of the whole page and copy them into your clipboard.
+        (Pro-tip use Ctrl-a/Cmd-a, or right click "Select All" and Ctrl-c/Cmd-c
+        or right click "Copy".)
       </li>
       <li>
-        Upload the file to this webpage.
+        Paste your clipboard into the text field.
       </li>
     </ol>
   </p>
@@ -35,8 +36,8 @@
 
   <script id="template" type="text/ractive">
     <label>
-      Upload your highlights
-      <input on-change="parseUpload" type="file" />
+      Paste the highlights page into here.
+      <textarea value="{{ pastedText }}" autofocus></textarea>
     </label>
 
     <hr />
