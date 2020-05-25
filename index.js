@@ -8,17 +8,17 @@ const readFile = file =>
   });
 
 const getTitle = contents =>
-  contents.match(/Your Kindle Notes For:\n(.+)\n/)[1];
+  contents.match(/(Your Kindle Notes For|メモ付きのKindle本):\n(.+)\n/)[2];
 
 const getHighlightsAndLocations = contents => {
   const result = [];
-  const regex = RegExp('Location: ([0-9,]+)\n(.+)\n', 'g');
+  const regex = RegExp('(Location|位置): ([0-9,]+)\n(.+)\n', 'g');
 
   let match;
   while ((match = regex.exec(contents)) !== null) {
     result.push({
-      location: match[1].replace(',', ''),
-      highlight: match[2],
+      location: match[2].replace(',', ''),
+      highlight: match[3],
     });
   }
 
