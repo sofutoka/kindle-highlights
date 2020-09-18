@@ -1,6 +1,6 @@
 # Kindle Highlights
 
-<https://greduan.github.io/kindle-highlights>
+<https://sofutoka.github.io/kindle-highlights>
 
 A small side-project to be able to extract the sentences I highlight during my
 reading on my Kindle in order to later be able to easily make sentence cards for
